@@ -1,0 +1,60 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <climits>
+
+using namespace std;
+
+const int INF = 1e9;
+
+// Function to solve TSP using top-down DP with bitmasking
+int tsp(int mask, int pos, const vector<vector<int>>& dist, vector<vector<int>>& dp) {
+    int n = dist.size();
+
+    // Base case: All cities have been visited (mask is all 1s)
+    // Return the cost to go back to the starting city (0)
+    if (mask == (1 << n) - 1) {
+        return dist[pos][0];
+    }
+
+    // Return already computed state
+    if (dp[mask][pos] != -1) {
+        return dp[mask][pos];
+    }
+
+    int ans = INF;
+
+    // Try visiting every unvisited city
+    for (int city = 0; city < n; city++) {
+        // Check if 'city' is not yet visited in the current mask
+        if ((mask & (1 << city)) == 0) {
+            int newCost = dist[pos][city] + tsp(mask | (1 << city), city, dist, dp);
+            ans = min(ans, newCost);
+        }
+    }
+
+    // Memoize and return the minimum cost
+    return dp[mask][pos] = ans;
+}
+
+int main() {
+    // Adjacency matrix representing distances between 4 cities
+    vector<vector<int>> dist = {
+        {0, 10, 15, 20},
+        {10, 0, 35, 25},
+        {15, 35, 0, 30},
+        {20, 25, 30, 0}
+    };
+
+    int n = dist.size();
+
+    // DP table of size (2^n) x n initialized with -1
+    vector<vector<int>> dp(1 << n, vector<int>(n, -1));
+
+    // Start from city 0, with bitmask 1 (binary 0001, meaning only city 0 is visited)
+    int minCost = tsp(1, 0, dist, dp);
+
+    cout << "Minimum Travelling Salesman Cost: " << minCost << endl;
+
+    return 0;
+}
